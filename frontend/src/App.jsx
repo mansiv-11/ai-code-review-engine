@@ -2,28 +2,40 @@ import { useState } from "react";
 import "./App.css";
 
 function App() {
+  const [mode, setMode] = useState("code"); // NEW
   const [code, setCode] = useState("def divide(a, b): return a / b");
+  const [diff, setDiff] = useState("+ def divide(a, b):\n+     return a / b"); // NEW
   const [language, setLanguage] = useState("python");
   const [context, setContext] = useState("Simple function");
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const reviewCode = async () => {
+  const review = async () => {
     setLoading(true);
     setResult(null);
 
     try {
-      const response = await fetch("http://127.0.0.1:8000/api/review", {
+      const endpoint =
+        mode === "code"
+          ? "http://127.0.0.1:8000/api/review"
+          : "http://127.0.0.1:8000/api/review-diff";
+
+      const body =
+        mode === "code"
+          ? { code, language, context }
+          : { diff };
+
+      const response = await fetch(endpoint, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ code, language, context }),
+        body: JSON.stringify(body),
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(errorText || "Request failed");
+        const text = await response.text();
+        throw new Error(text || "Request failed");
       }
 
       const data = await response.json();
@@ -38,58 +50,54 @@ function App() {
   return (
     <div className="page">
       <h1>AI Code Review Engine</h1>
-      <p>Review code for bugs, security risks, and improvements.</p>
 
-      <input
-        value={language}
-        onChange={(e) => setLanguage(e.target.value)}
-        placeholder="Language"
-      />
+      {/* MODE SWITCH */}
+      <div style={{ marginBottom: "10px" }}>
+        <button onClick={() => setMode("code")}>Code Review</button>
+        <button onClick={() => setMode("diff")}>Diff Review</button>
+      </div>
 
-      <input
-        value={context}
-        onChange={(e) => setContext(e.target.value)}
-        placeholder="Context"
-      />
+      {/* CODE MODE */}
+      {mode === "code" && (
+        <>
+          <input
+            value={language}
+            onChange={(e) => setLanguage(e.target.value)}
+            placeholder="Language"
+          />
 
-      <textarea
-        value={code}
-        onChange={(e) => setCode(e.target.value)}
-        rows={10}
-      />
+          <input
+            value={context}
+            onChange={(e) => setContext(e.target.value)}
+            placeholder="Context"
+          />
 
-      <button onClick={reviewCode} disabled={loading}>
-        {loading ? "Reviewing..." : "Review Code"}
-      </button>
-
-      {result && !result.error && (
-        <div className="results">
-          {["bugs", "security", "improvements"].map((section) => (
-            <div key={section} className="section">
-              <h2>{section.toUpperCase()}</h2>
-
-              {result[section]?.length === 0 ? (
-                <p>No issues</p>
-              ) : (
-                result[section]?.map((item, idx) => (
-                  <div key={idx} className="card">
-                    <h3>{item.title}</h3>
-                    <p>
-                      <strong>Severity:</strong> {item.severity}
-                    </p>
-                    <p>{item.explanation}</p>
-                    <p>
-                      <strong>Fix:</strong> {item.suggestion}
-                    </p>
-                  </div>
-                ))
-              )}
-            </div>
-          ))}
-        </div>
+          <textarea
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            rows={10}
+          />
+        </>
       )}
 
-      {result?.error && <div className="error">{result.error}</div>}
+      {/* DIFF MODE */}
+      {mode === "diff" && (
+        <textarea
+          value={diff}
+          onChange={(e) => setDiff(e.target.value)}
+          rows={10}
+        />
+      )}
+
+      <button onClick={review} disabled={loading}>
+        {loading ? "Reviewing..." : "Review"}
+      </button>
+
+      {result && (
+        <pre className="result">
+          {JSON.stringify(result, null, 2)}
+        </pre>
+      )}
     </div>
   );
 }

@@ -3,7 +3,7 @@ def build_review_prompt(code: str, language: str | None = None, context: str | N
     context_text = context or "No additional context provided."
 
     return f"""
-You are a senior software engineer doing a strict code review.
+You are a strict senior software engineer doing a code review.
 
 Return ONLY valid JSON.
 Do not return markdown.
@@ -13,32 +13,19 @@ title, severity, line, explanation, suggestion.
 
 Required JSON format:
 {{
-  "bugs": [
-    {{
-      "title": "Short bug title",
-      "severity": "low | medium | high",
-      "line": 1,
-      "explanation": "Why this is a bug",
-      "suggestion": "How to fix it"
-    }}
-  ],
+  "bugs": [],
   "security": [],
-  "improvements": [
-    {{
-      "title": "Short improvement title",
-      "severity": "low | medium | high",
-      "line": 1,
-      "explanation": "Why this improves the code",
-      "suggestion": "Specific improvement"
-    }}
-  ]
+  "improvements": []
 }}
 
-Classification rules:
-- Runtime failure risks go in bugs
-- Security vulnerabilities go in security
-- Style, readability, maintainability, and performance suggestions go in improvements
-- If a category has no issues, return []
+STRICT CLASSIFICATION RULES:
+- Division by zero risk MUST be classified as a bug.
+- Null pointer risk MUST be classified as a bug.
+- Runtime exceptions MUST be classified as bugs.
+- Any logic that can crash execution MUST be classified as a bug.
+- Security vulnerabilities go in security.
+- Style/readability suggestions go in improvements.
+- NEVER put crash risks or runtime exceptions in improvements.
 
 Code:
 {code}
@@ -48,4 +35,37 @@ Language:
 
 Context:
 {context_text}
+"""
+
+
+def build_diff_review_prompt(diff: str) -> str:
+    return f"""
+You are a strict senior software engineer reviewing a Git diff.
+
+Analyze only the added lines in the diff.
+
+Return ONLY valid JSON.
+Do not return markdown.
+Do not return strings inside bugs, security, or improvements.
+Every issue must be an object with these exact keys:
+title, severity, line, explanation, suggestion.
+
+Required JSON format:
+{{
+  "bugs": [],
+  "security": [],
+  "improvements": []
+}}
+
+STRICT CLASSIFICATION RULES:
+- Division by zero risk MUST be classified as a bug.
+- Null pointer risk MUST be classified as a bug.
+- Runtime exceptions MUST be classified as bugs.
+- Any logic that can crash execution MUST be classified as a bug.
+- Security vulnerabilities go in security.
+- Style/readability suggestions go in improvements.
+- NEVER put crash risks or runtime exceptions in improvements.
+
+Git diff:
+{diff}
 """
