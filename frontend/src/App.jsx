@@ -21,10 +21,15 @@ function App() {
         body: JSON.stringify({ code, language, context }),
       });
 
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || "Request failed");
+      }
+
       const data = await response.json();
       setResult(data);
     } catch (error) {
-      setResult({ error: "Failed to connect to backend" });
+      setResult({ error: error.message });
     } finally {
       setLoading(false);
     }
@@ -57,9 +62,34 @@ function App() {
         {loading ? "Reviewing..." : "Review Code"}
       </button>
 
-      {result && (
-        <pre className="result">{JSON.stringify(result, null, 2)}</pre>
+      {result && !result.error && (
+        <div className="results">
+          {["bugs", "security", "improvements"].map((section) => (
+            <div key={section} className="section">
+              <h2>{section.toUpperCase()}</h2>
+
+              {result[section]?.length === 0 ? (
+                <p>No issues</p>
+              ) : (
+                result[section]?.map((item, idx) => (
+                  <div key={idx} className="card">
+                    <h3>{item.title}</h3>
+                    <p>
+                      <strong>Severity:</strong> {item.severity}
+                    </p>
+                    <p>{item.explanation}</p>
+                    <p>
+                      <strong>Fix:</strong> {item.suggestion}
+                    </p>
+                  </div>
+                ))
+              )}
+            </div>
+          ))}
+        </div>
       )}
+
+      {result?.error && <div className="error">{result.error}</div>}
     </div>
   );
 }

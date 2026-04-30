@@ -1,23 +1,34 @@
-# AI Code Review Engine
+# 🚀 AI Code Review Engine
 
-AI-powered backend that reviews code and returns:
+AI-powered full-stack application that analyzes code and returns structured feedback on:
 - Bugs
-- Security issues
+- Security risks
 - Improvements
 
-## Tech Stack
+---
+
+## 🔥 Live Features
+
+- 🧠 AI-based code analysis using OpenAI
+- 📦 Structured JSON output (production-ready format)
+- ⚡ FastAPI backend (high-performance APIs)
+- 🎨 React frontend (clean UI for interaction)
+- 🔍 Detects runtime issues (e.g., division by zero)
+- 🛠 Suggests improvements and best practices
+
+---
+
+## 🏗️ Tech Stack
+
+### Backend
 - FastAPI
-- OpenAI API
 - Python
+- OpenAI API
 
-## Features
-- Accepts raw code input
-- Returns structured JSON feedback
-- Detects runtime issues (e.g., division by zero)
-- Suggests improvements
+### Frontend
+- React (Vite)
+- CSS
 
-## Run locally
+---
 
-```bash
-pip install -r requirements.txt
-uvicorn app.main:app --reload
+## 📂 Project Structure
