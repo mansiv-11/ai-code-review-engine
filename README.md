@@ -32,3 +32,5 @@ AI-powered full-stack application that analyzes code and returns structured feed
 ---
 
 ## 📂 Project Structure
+
+Test PR change
